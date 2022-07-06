@@ -7,10 +7,11 @@
 //
 
 import UIKit
+import CoreData
 
 class TodoListViewController: UITableViewController {
     var itemArray = [Item]()
-    let dataFilePath = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first?.appendingPathComponent("Items.plist")
+    let context = (UIApplication.shared.delegate as! AppDelegate).persistentContainer.viewContext
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -38,7 +39,6 @@ class TodoListViewController: UITableViewController {
         let data = itemArray[indexPath.row]
         data.done = !data.done
         tableView.deselectRow(at: indexPath, animated: true)
-        tableView.reloadData()
         saveItems()
     }
     
@@ -54,9 +54,12 @@ class TodoListViewController: UITableViewController {
         }
         
         let action = UIAlertAction(title: "Add Item", style: .default) { action in
-            self.itemArray.append(Item(title: textField.text ?? "", done: false))
+            let item = Item(context: self.context)
+            item.title = textField.text
+            item.done = false
+            self.itemArray.append(item)
+            
             self.saveItems()
-            self.tableView.reloadData()
         }
         
         alert.addAction(action)
@@ -67,25 +70,22 @@ class TodoListViewController: UITableViewController {
 
 
     func saveItems() {
-        let encoder = PropertyListEncoder()
-        
         do {
-            let data = try encoder.encode(itemArray)
-            try data.write(to: dataFilePath!)
+            try context.save()
         } catch {
             print(error)
         }
+        
+        tableView.reloadData()
     }
 
     func loadItems() {
-        if let data = try? Data(contentsOf: dataFilePath!) {
-            let decoder = PropertyListDecoder()
-            
-            do {
-                try itemArray = decoder.decode([Item].self, from: data)
-            } catch {
-                print(error)
-            }
+        let request: NSFetchRequest<Item> = Item.fetchRequest()
+        
+        do {
+            itemArray = try context.fetch(request)
+        } catch {
+            print(error)
         }
     }
 }
