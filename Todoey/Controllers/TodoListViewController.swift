@@ -13,11 +13,34 @@ import ChameleonFramework
 class TodoListViewController: SwipeTableViewController {
     var items: Results<Item>?
     let realm = try! Realm()
+    @IBOutlet weak var searchBar: UISearchBar!
     
     var selectedCategory: Category? {
         didSet {
-            navigationItem.title = selectedCategory?.name
             loadItems()
+        }
+    }
+    
+    override func viewWillAppear(_ animated: Bool) {
+        super.viewWillAppear(animated)
+        
+        if let colorString = selectedCategory?.color,
+           let color = UIColor(hexString: colorString),
+           let navBar = navigationController?.navigationBar {
+            let standard = navBar.standardAppearance
+            guard let scroll = navBar.scrollEdgeAppearance else { fatalError() }
+            
+            standard.backgroundColor = color
+            navBar.scrollEdgeAppearance?.backgroundColor = color
+            searchBar.barTintColor = color
+            searchBar.searchTextField.backgroundColor = .white
+            
+            title = selectedCategory!.name
+            navBar.tintColor = ContrastColorOf(color, returnFlat: true)
+            standard.largeTitleTextAttributes = [NSAttributedString.Key.foregroundColor: ContrastColorOf(color, returnFlat: true)]
+            standard.titleTextAttributes = [NSAttributedString.Key.foregroundColor: ContrastColorOf(color, returnFlat: true)]
+            scroll.largeTitleTextAttributes = standard.largeTitleTextAttributes
+            scroll.titleTextAttributes = standard.titleTextAttributes
         }
     }
     

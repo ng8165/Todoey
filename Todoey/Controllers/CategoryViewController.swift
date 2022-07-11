@@ -20,6 +20,21 @@ class CategoryViewController: SwipeTableViewController {
         loadCategories()
     }
     
+    override func viewWillAppear(_ animated: Bool) {
+        super.viewWillAppear(animated)
+        
+        guard let navBar = navigationController?.navigationBar else { fatalError() }
+        let standard = navBar.standardAppearance
+        guard let scroll = navBar.scrollEdgeAppearance else { fatalError() }
+        
+        standard.backgroundColor = .systemBlue
+        scroll.backgroundColor = .systemBlue
+        standard.largeTitleTextAttributes = [NSAttributedString.Key.foregroundColor: UIColor.white]
+        standard.titleTextAttributes = [NSAttributedString.Key.foregroundColor: UIColor.white]
+        scroll.largeTitleTextAttributes = standard.largeTitleTextAttributes
+        scroll.titleTextAttributes = standard.titleTextAttributes
+    }
+    
     // MARK: - TableView Data Source
     
     override func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
